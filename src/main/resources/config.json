@@ -2,6 +2,8 @@
   "numOfParams":4,
   "fileDir":"D:\\",
   "fileFormat":"xls",
+  "sheetCapacity":10240,
+  "tableCapacity":2,
   "bufSize":1024,
   "constName":"const",
   "duration":656400,

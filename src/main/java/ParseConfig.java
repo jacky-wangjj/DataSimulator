@@ -10,6 +10,10 @@ import java.util.List;
  * Created by wangjj17 on 2018/11/14.
  */
 public class ParseConfig {
+    /**
+     * 解析json文件到Config对象
+     * @return
+     */
     public static Config parseConfig() {
         JSONReader jsonReader = null;
         try {
@@ -27,6 +31,8 @@ public class ParseConfig {
         System.out.println(config.getNumOfParams());
         System.out.println(config.getFileDir());
         System.out.println(config.getFileFormat());
+        System.out.println(config.getSheetCapacity());
+        System.out.println(config.getTableCapacity());
         System.out.println(config.getBufSize());
         System.out.println(config.getConstName());
         System.out.println(config.getDuration());

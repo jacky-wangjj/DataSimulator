@@ -8,6 +8,8 @@ public class Config {
     private int numOfParams;
     private String fileDir;
     private String fileFormat;
+    private long sheetCapacity;
+    private int tableCapacity;
     private int bufSize;
     private String constName;
     private long duration;
@@ -35,6 +37,22 @@ public class Config {
 
     public void setFileFormat(String fileFormat) {
         this.fileFormat = fileFormat;
+    }
+
+    public long getSheetCapacity() {
+        return sheetCapacity;
+    }
+
+    public void setSheetCapacity(long sheetCapacity) {
+        this.sheetCapacity = sheetCapacity;
+    }
+
+    public int getTableCapacity() {
+        return tableCapacity;
+    }
+
+    public void setTableCapacity(int tableCapacity) {
+        this.tableCapacity = tableCapacity;
     }
 
     public int getBufSize() {

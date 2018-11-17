@@ -1,6 +1,8 @@
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by wangjj17 on 2018/11/14.
@@ -10,22 +12,25 @@ public class DataSimulator{
     private Thread thread;
     private boolean isStop = false;
     private static String fileDir;
-    private Map<String, String> filePathMap;
+    private Map<String, String> fileNameMap;
     private long duration;
     private long startTime;
     private List<ParamConfs> constParams = new ArrayList<ParamConfs>();
     private List<ParamConfs> timeSequenceParams = new ArrayList<ParamConfs>();
-    private int sheetIndex;
+    private int sheetIndex;//sheet索引
+    private int tableIndex;//table索引
     private String XLS_SUFFIX = ".xls";
     private String XLSX_SUFFIX = ".xlsx";
     private String XLS = "xls";
     private String XLSX = "xlsx";
-    private String SUFFIX;
+    private String SUFFIX;//后缀
     private String CONST_NAME = "const";
     private int CONST_TYPE = 0;
     private int TIMESEQUENCE_TYPE = 1;
     private int BUFSIZE = 1024;
     private String FILE_FORMAT = "xls";
+    private long SHEET_CAPACITY = 65536;
+    private int TABLE_CAPACITY = 1;
     private ExcelUtils eu = new ExcelUtils();
 
     /**
@@ -37,10 +42,25 @@ public class DataSimulator{
         duration = config.getDuration();//获取模拟总时间，以ms为单位
         fileDir = config.getFileDir();//获取excel文件的存储路径
         FILE_FORMAT = config.getFileFormat();//获取excel文件的格式
+        SHEET_CAPACITY = config.getSheetCapacity();//获取sheet表的最大容量
+        TABLE_CAPACITY = config.getTableCapacity();//获取table表的最大sheet数
         BUFSIZE = config.getBufSize();//获取buf的大小
         CONST_NAME = config.getConstName();//获取常量表的表名
-        //依据ParamConfs.timeInterval分别填充constParams和timeSequenceParams
         List<ParamConfs> paramConfs = config.getParamConfs();
+        checkParamConfs(paramConfs);
+        checkFormat();
+        checkFile();
+        eu.setBUFSIZE(BUFSIZE);
+        eu.setfileNameMap(fileNameMap);
+        eu.setSHEET_CAPACITY(SHEET_CAPACITY);
+        eu.setTABLE_CAPACITY(TABLE_CAPACITY);
+    }
+
+    /**
+     * 依据ParamConfs.timeInterval分别填充constParams和timeSequenceParams
+     * @param paramConfs
+     */
+    public void checkParamConfs(List<ParamConfs> paramConfs) {
         for (ParamConfs paramConf : paramConfs) {
             if (paramConf.getTimeInterval() == 0) {
                 constParams.add(paramConf);
@@ -48,31 +68,47 @@ public class DataSimulator{
                 timeSequenceParams.add(paramConf);
             }
         }
+    }
+
+    /**
+     * 设置SUFFIX
+     */
+    public void checkFormat() {
         if (FILE_FORMAT.equals(XLS)) {
             SUFFIX = XLS_SUFFIX;
         } else if (FILE_FORMAT.equals(XLSX)) {
             SUFFIX = XLSX_SUFFIX;
         }
-        //新建容量为timeSequenceParams.size()+1的Map，存储文件路径
-        filePathMap = new HashMap<String, String>(timeSequenceParams.size()+1);
-        filePathMap.put(CONST_NAME, fileDir+CONST_NAME+SUFFIX);
-        for (ParamConfs paramConf : timeSequenceParams) {
-            String paramName = paramConf.getName();
-            filePathMap.put(paramName, fileDir+paramName+SUFFIX);
-        }
-        Set<String> keys = filePathMap.keySet();
-        for (String key : keys) {
-            String filePath = filePathMap.get(key);
-            //检查filePath的excel文件是否存在，若存在，则删除
-            File file = new File(filePath);
-            if (file.exists()) {
-                file.delete();
-            }
-        }
-        eu.setBUFSIZE(BUFSIZE);
-        eu.setFilePathMap(filePathMap);
     }
 
+    /**
+     * 检查fileNameMap中的文件是否存在，存在则删除
+     */
+    public void checkFile() {
+        //新建容量为timeSequenceParams.size()+1的Map，存储文件路径
+        fileNameMap = new HashMap<String, String>(timeSequenceParams.size()+1);
+        fileNameMap.put(CONST_NAME, fileDir+CONST_NAME+"-");
+        for (ParamConfs paramConf : timeSequenceParams) {
+            String paramName = paramConf.getName();
+            fileNameMap.put(paramName, fileDir+paramName+"-");
+        }
+        File[] files = new File(fileDir).listFiles();
+        Set<String> keys = fileNameMap.keySet();
+        for (File file : files) {
+            for (String key : keys) {
+                //模式匹配param-0.xls，[0-9]+匹配一到多位数字
+                Pattern pattern = Pattern.compile(key + "-[0-9]+" + SUFFIX);
+                Matcher matcher = pattern.matcher(file.getName());
+                if (matcher.matches()) {
+                    System.out.println(file.getName());
+                    //检查fileName的excel文件是否存在，存在则删除
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
+            }
+        }
+    }
     /**
      * 生成min和max范围内保留n位小数的double随机数
      * @param min
@@ -94,6 +130,10 @@ public class DataSimulator{
         return RandomUtils.getIntEvenNum(min, max);
     }
 
+    /**
+     * 打印参数信息
+     * @param params
+     */
     public void printParams(List<Param> params) {
         for (Param param : params) {
             System.out.print("timestamp:"+param.getTimestamp()+" id:"+param.getId()+" name:"+param.getName()+" values[");
@@ -141,14 +181,23 @@ public class DataSimulator{
     }
 
     /**
+     * 初始化sheet，table的索引
+     */
+    public void beforeSave() {
+        getCurrentTime();
+        sheetIndex = -1;
+        eu.setSheetIndex(sheetIndex);
+        tableIndex = 0;
+        eu.setTableIndex(tableIndex);
+    }
+
+    /**
      * 保存常量
      */
     public void saveConst() {
         System.out.println("saveConst:");
-        getCurrentTime();
+        beforeSave();
         List<Param> params = new ArrayList(BUFSIZE);
-        sheetIndex = -1;
-        eu.setSheetIndex(sheetIndex);
         for (ParamConfs constParam : constParams) {
             //将参数信息填充到Param对象
             Param<String, Number> param = new Param<String, Number>();
@@ -169,8 +218,7 @@ public class DataSimulator{
         System.out.println("saveTimeSequence:");
         getCurrentTime();
         for (ParamConfs timeSequenceParam : timeSequenceParams) {
-            sheetIndex = -1;
-            eu.setSheetIndex(sheetIndex);
+            beforeSave();
             startWork(timeSequenceParam);
         }
         getCurrentTime();
