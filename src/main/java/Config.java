@@ -7,6 +7,9 @@ import java.util.List;
 public class Config {
     private int numOfParams;
     private String fileDir;
+    private String fileFormat;
+    private int bufSize;
+    private String constName;
     private long duration;
     private List<ParamConfs> paramConfs;
 
@@ -24,6 +27,30 @@ public class Config {
 
     public void setFileDir(String fileDir) {
         this.fileDir = fileDir;
+    }
+
+    public String getFileFormat() {
+        return fileFormat;
+    }
+
+    public void setFileFormat(String fileFormat) {
+        this.fileFormat = fileFormat;
+    }
+
+    public int getBufSize() {
+        return bufSize;
+    }
+
+    public void setBufSize(int bufSize) {
+        this.bufSize = bufSize;
+    }
+
+    public String getConstName() {
+        return constName;
+    }
+
+    public void setConstName(String constName) {
+        this.constName = constName;
     }
 
     public long getDuration() {

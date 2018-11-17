@@ -1,7 +1,10 @@
 {
   "numOfParams":4,
   "fileDir":"D:\\",
-  "duration":86400000,
+  "fileFormat":"xls",
+  "bufSize":1024,
+  "constName":"const",
+  "duration":656400,
   "paramConfs":[
     {
       "id":1,

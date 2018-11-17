@@ -18,11 +18,14 @@ public class DataSimulator{
     private int sheetIndex;
     private String XLS_SUFFIX = ".xls";
     private String XLSX_SUFFIX = ".xlsx";
-    private String CONST = "const";
+    private String XLS = "xls";
+    private String XLSX = "xlsx";
+    private String SUFFIX;
+    private String CONST_NAME = "const";
     private int CONST_TYPE = 0;
     private int TIMESEQUENCE_TYPE = 1;
     private int BUFSIZE = 1024;
-    private String FILETYPE = "xlsx";
+    private String FILE_FORMAT = "xls";
     private ExcelUtils eu = new ExcelUtils();
 
     /**
@@ -33,6 +36,9 @@ public class DataSimulator{
         startTime = System.currentTimeMillis();//获取系统时间，作为开始时间
         duration = config.getDuration();//获取模拟总时间，以ms为单位
         fileDir = config.getFileDir();//获取excel文件的存储路径
+        FILE_FORMAT = config.getFileFormat();//获取excel文件的格式
+        BUFSIZE = config.getBufSize();//获取buf的大小
+        CONST_NAME = config.getConstName();//获取常量表的表名
         //依据ParamConfs.timeInterval分别填充constParams和timeSequenceParams
         List<ParamConfs> paramConfs = config.getParamConfs();
         for (ParamConfs paramConf : paramConfs) {
@@ -42,12 +48,17 @@ public class DataSimulator{
                 timeSequenceParams.add(paramConf);
             }
         }
+        if (FILE_FORMAT.equals(XLS)) {
+            SUFFIX = XLS_SUFFIX;
+        } else if (FILE_FORMAT.equals(XLSX)) {
+            SUFFIX = XLSX_SUFFIX;
+        }
         //新建容量为timeSequenceParams.size()+1的Map，存储文件路径
         filePathMap = new HashMap<String, String>(timeSequenceParams.size()+1);
-        filePathMap.put(CONST, fileDir+CONST+XLSX_SUFFIX);
+        filePathMap.put(CONST_NAME, fileDir+CONST_NAME+SUFFIX);
         for (ParamConfs paramConf : timeSequenceParams) {
             String paramName = paramConf.getName();
-            filePathMap.put(paramName, fileDir+paramName+XLSX_SUFFIX);
+            filePathMap.put(paramName, fileDir+paramName+SUFFIX);
         }
         Set<String> keys = filePathMap.keySet();
         for (String key : keys) {
@@ -147,7 +158,7 @@ public class DataSimulator{
             params.add(param);
         }
         //printParams(params);
-        eu.saveToExcel(params, CONST_TYPE, CONST, FILETYPE);
+        eu.saveToExcel(params, CONST_TYPE, CONST_NAME, FILE_FORMAT);
         getCurrentTime();
     }
 
@@ -178,7 +189,7 @@ public class DataSimulator{
             while (timestamp < endTime) {
                 if (params.size() == BUFSIZE) {
                     //printParams(params);
-                    eu.saveToExcel(params, TIMESEQUENCE_TYPE, timeSequenceParam.getName(), FILETYPE);
+                    eu.saveToExcel(params, TIMESEQUENCE_TYPE, timeSequenceParam.getName(), FILE_FORMAT);
                     params.clear();
                 }
                 //将变量参数信息填充到Param对象
@@ -195,7 +206,7 @@ public class DataSimulator{
                 break;
         }
         System.out.println("params.size:"+params.size());
-        eu.saveToExcel(params, TIMESEQUENCE_TYPE, timeSequenceParam.getName(), FILETYPE);
+        eu.saveToExcel(params, TIMESEQUENCE_TYPE, timeSequenceParam.getName(), FILE_FORMAT);
     }
 
     public static void main(String[] args) {

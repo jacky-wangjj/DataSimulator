@@ -26,17 +26,19 @@ public class ParseConfig {
         Config config = ParseConfig.parseConfig();
         System.out.println(config.getNumOfParams());
         System.out.println(config.getFileDir());
+        System.out.println(config.getFileFormat());
+        System.out.println(config.getBufSize());
+        System.out.println(config.getConstName());
         System.out.println(config.getDuration());
         List<ParamConfs> list = config.getParamConfs();
         for (ParamConfs paramConfs : list) {
-            System.out.println(paramConfs.getId());
-            System.out.println(paramConfs.getName());
-            System.out.println(paramConfs.getTimeInterval());
+            System.out.print("id:"+paramConfs.getId()+" name:"+paramConfs.getName()+" timeInterval:"+paramConfs.getTimeInterval()+" others[");
             List<ParamRanges> paramRanges = paramConfs.getParamRanges();
             for (ParamRanges param : paramRanges) {
                 List<?> range = param.getParamRange();
-                System.out.println(range.get(0).getClass()+" "+range.get(1).getClass());
+                System.out.print(" "+range.get(0).getClass()+" "+range.get(1).getClass()+" ");
             }
+            System.out.println("]");
         }
     }
 }
