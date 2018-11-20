@@ -32,6 +32,7 @@ public class DataSimulator{
     private long SHEET_CAPACITY = 65536;
     private int TABLE_CAPACITY = 1;
     private ExcelUtils eu = new ExcelUtils();
+    private ParamUtils paramUtils;
 
     /**
      * 初始化数据模拟器，读取配置文件并解析到Config对象
@@ -46,6 +47,7 @@ public class DataSimulator{
         TABLE_CAPACITY = config.getTableCapacity();//获取table表的最大sheet数
         BUFSIZE = config.getBufSize();//获取buf的大小
         CONST_NAME = config.getConstName();//获取常量表的表名
+        paramUtils = new ParamUtils();
         List<ParamConfs> paramConfs = config.getParamConfs();
         checkParamConfs(paramConfs);
         checkFormat();
@@ -109,26 +111,6 @@ public class DataSimulator{
             }
         }
     }
-    /**
-     * 生成min和max范围内保留n位小数的double随机数
-     * @param min
-     * @param max
-     * @param n
-     * @return
-     */
-    public double getValue(double min, double max, double n) {
-        return RandomUtils.getDoubleEvenNum(min, max, (int)n);
-    }
-
-    /**
-     * 生成大于min且小于max的随机整数
-     * @param min
-     * @param max
-     * @return
-     */
-    public int getValue(int min, int max) {
-        return RandomUtils.getIntEvenNum(min, max);
-    }
 
     /**
      * 打印参数信息
@@ -136,40 +118,8 @@ public class DataSimulator{
      */
     public void printParams(List<Param> params) {
         for (Param param : params) {
-            System.out.print("timestamp:"+param.getTimestamp()+" id:"+param.getId()+" name:"+param.getName()+" values[");
-            Map<String, Number> values = param.getValues();
-            Set<String> keys = values.keySet();
-            for (String key : keys) {
-                System.out.print(" "+key+":"+values.get(key)+" ");
-            }
-            System.out.println("]");
+            System.out.println(param.toString());
         }
-    }
-
-    /**
-     * 依据ParamConfs中的范围信息，生成对应的变量
-     * @param param
-     * @return
-     */
-    public Map<String, Number> getRangesValues(ParamConfs param) {
-        //其他参数信息放入values的Map中，可增减
-        Map<String, Number> values = new LinkedHashMap<String, Number>();
-        int i = 0;
-        //依据config.json中的paramRanges生成特定范围内的随机变量
-        List<ParamRanges> paramRanges = param.getParamRanges();
-        for (ParamRanges paramRange : paramRanges) {
-            List<Number> range = paramRange.getParamRange();
-            Number value = null;
-            if (range.size() == 3) {
-                value = getValue(range.get(0).doubleValue(), range.get(1).doubleValue(), range.get(2).intValue());
-            } else if (range.size() == 2) {
-                value = getValue(range.get(0).intValue(), range.get(1).intValue());
-            } else {
-                System.out.println("参数个数错误");
-            }
-            values.put("par"+String.valueOf(++i), value);//变量从par1依次增长
-        }
-        return values;
     }
 
     /**
@@ -200,10 +150,7 @@ public class DataSimulator{
         List<Param> params = new ArrayList(BUFSIZE);
         for (ParamConfs constParam : constParams) {
             //将参数信息填充到Param对象
-            Param<String, Number> param = new Param<String, Number>();
-            param.setId(constParam.getId());
-            param.setName(constParam.getName());
-            param.setValues(getRangesValues(constParam));
+            Param<String, Number> param = paramUtils.getParam(constParam, startTime);
             params.add(param);
         }
         //printParams(params);
@@ -241,11 +188,7 @@ public class DataSimulator{
                     params.clear();
                 }
                 //将变量参数信息填充到Param对象
-                Param<String, Number> param = new Param<String, Number>();
-                param.setId(timeSequenceParam.getId());
-                param.setName(timeSequenceParam.getName());
-                param.setValues(getRangesValues(timeSequenceParam));
-                param.setTimestamp(timestamp);
+                Param<String, Number> param = paramUtils.getParam(timeSequenceParam, timestamp);
                 params.add(param);
                 timestamp = timestamp + timeInterval;
             }

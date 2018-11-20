@@ -1,10 +1,13 @@
+import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 保存参数变量
  * Created by wangjj17 on 2018/11/14.
  */
-public class Param<K, V> {
+public class Param<K, V> implements Serializable {
+    private static final long serialVersionUID = 6439856118442143605L;
     private long timestamp;
     private int id;
     private String name;
@@ -40,5 +43,16 @@ public class Param<K, V> {
 
     public void setValues(Map<K, V> values) {
         this.values = values;
+    }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("timestamp:"+timestamp+" id:"+id+" name:"+name+" values[");
+        Set<String> keys = (Set<String>) values.keySet();
+        for (String key : keys) {
+            sb.append(" "+key+":"+values.get(key)+" ");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

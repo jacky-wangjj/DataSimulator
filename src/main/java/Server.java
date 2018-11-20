@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -6,63 +7,40 @@ import java.net.Socket;
  * Created by wangjj17 on 2018/11/17.
  */
 public class Server {
-    private int port = 8888;
+    private String host = SiteConfig.get("tcp.host");
+    private int port = Integer.valueOf(SiteConfig.get("tcp.port"));
     private ServerSocket serverSocket;
+    private Config config = ParseConfig.parseConfig();
 
-    public Server() throws IOException {
-        serverSocket = new ServerSocket(port);
+    public Server() {
+        try {
+            //新建ServerSocket，backlog为最大等待连接数，InetAddress为绑定的IP
+            serverSocket = new ServerSocket(port, config.getNumOfParams(), InetAddress.getByName(host));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Server start...");
+        System.out.println(serverSocket.getInetAddress().getHostAddress());//服务端绑定的ip
+        System.out.println(serverSocket.getLocalPort());//服务端绑定的port
     }
 
     public void service() {
         while (true) {
             Socket socket = null;
-            InputStream is = null;
-            InputStreamReader isr = null;
-            BufferedReader br = null;
-            OutputStream os = null;
-            PrintWriter pw = null;
             try {
                 //调用accept()方法开始监听，等待客户端的连接
                 socket = serverSocket.accept();
                 System.out.println("new connection accepted "+socket.getInetAddress()+":"+socket.getPort());
-                //获取输入流，并读取客户端信息
-                is = socket.getInputStream();
-                isr = new InputStreamReader(is);
-                br = new BufferedReader(isr);
-                String info = null;
-                while ((info = br.readLine()) != null) {
-                    System.out.println("client say: "+info);
-                }
-                socket.shutdownInput();//关闭输入流
-                //获取输出流，响应客户端的请求
-                os = socket.getOutputStream();
-                pw = new PrintWriter(os);
-                pw.write("hello,client");
-                pw.flush();//调用flush()方法将缓冲输出
+                //每个socket起一个线程来处理
+                ServerThread serverThread = new ServerThread(socket);
+                serverThread.start();
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                try {
-                    //关闭资源
-                    pw.close();
-                    os.close();
-                    br.close();
-                    isr.close();
-                    is.close();
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
     public static void main(String[] args) {
-        try {
-            Server server = new Server();
-            server.service();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Server server = new Server();
+        server.service();
     }
 }

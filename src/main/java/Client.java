@@ -1,54 +1,54 @@
-import java.io.*;
-import java.net.Socket;
+import java.util.*;
 
 /**
  * Created by wangjj17 on 2018/11/17.
  */
 public class Client {
-    private int port = 8888;
-    private String host = "localhost";
+    private String host;
+    private int port;
+    private static Config config;
+    private List<ParamConfs> paramConfs;
+    private long startTime;
+    private long delay = 0;
+    private ParamUtils paramUtils;
+
+    public void init() {
+        host = SiteConfig.get("tcp.host");
+        port = Integer.valueOf(SiteConfig.get("tcp.port"));
+        paramUtils = new ParamUtils();
+        config = ParseConfig.parseConfig();//解析config.json中的配置到Config对象
+        paramConfs = config.getParamConfs();
+        startTime = System.currentTimeMillis();//获取系统时间，作为开始时间
+    }
 
     public void startClient() {
-        Socket socket = null;
-        OutputStream os = null;
-        PrintWriter pw = null;
-        InputStream is = null;
-        InputStreamReader isr = null;
-        BufferedReader br = null;
-        try {
-            //创建客户端Socket，指定服务器地址和端口
-            socket = new Socket(host, port);
-            //获取输出流，向服务器端发送信息
-            os = socket.getOutputStream();
-            pw = new PrintWriter(os);
-            pw.write("hello,server");
-            pw.flush();
-            socket.shutdownOutput();//关闭输出流
-            //获取输入流，并读取服务端的相应信息
-            is = socket.getInputStream();
-            isr = new InputStreamReader(is);
-            br = new BufferedReader(isr);
-            String info = null;
-            while ((info = br.readLine()) != null) {
-                System.out.println("server say: "+info);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                //关闭资源
-                br.close();
-                is.close();
-                pw.close();
-                os.close();
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+        for (ParamConfs paramConf : paramConfs) {
+            long timeInterval = paramConf.getTimeInterval();
+            if (timeInterval == 0) {
+                Param<String, Number> param = paramUtils.getParam(paramConf, startTime);
+                System.out.println(param.toString());
+                ClientThread clientThread = new ClientThread(host, port, param);
+                clientThread.start();
+            } else if (timeInterval > 0){
+                TimerTask task = new TimerTask() {
+                    @Override
+                    public void run() {
+                        Param<String, Number> param = paramUtils.getParam(paramConf, System.currentTimeMillis());
+                        System.out.println(param.toString());
+                        ClientThread clientThread = new ClientThread(host, port, param);
+                        clientThread.start();
+                    }
+                };
+                //设置定时任务，延时delay后开始执行，每个timeInterval时长，执行一次task任务
+                Timer timer = new Timer();
+                timer.scheduleAtFixedRate(task, delay, timeInterval);
             }
         }
     }
+
     public static void main(String[] args) {
         Client client = new Client();
+        client.init();
         client.startClient();
     }
 }
