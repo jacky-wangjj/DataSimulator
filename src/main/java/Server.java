@@ -20,8 +20,7 @@ public class Server {
             e.printStackTrace();
         }
         System.out.println("Server start...");
-        System.out.println(serverSocket.getInetAddress().getHostAddress());//服务端绑定的ip
-        System.out.println(serverSocket.getLocalPort());//服务端绑定的port
+        System.out.println(serverSocket.getInetAddress().getHostAddress()+":"+serverSocket.getLocalPort());//服务端绑定的ip,port
     }
 
     public void service() {
