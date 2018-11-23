@@ -1,3 +1,5 @@
+package properties;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -8,7 +10,7 @@ import java.util.Properties;
 public class SiteConfig {
     private static Properties prop = null;
     static {
-        prop = loadProperties("site.properties");
+        prop = loadProperties("../site.properties");
     }
 
     public static String get(String key) {

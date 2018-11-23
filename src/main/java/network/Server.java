@@ -1,3 +1,9 @@
+package network;
+
+import config.Config;
+import config.ParseConfig;
+import properties.SiteConfig;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -19,7 +25,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Server start...");
+        System.out.println("network.Server start...");
         System.out.println(serverSocket.getInetAddress().getHostAddress()+":"+serverSocket.getLocalPort());//服务端绑定的ip,port
     }
 

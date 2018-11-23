@@ -1,3 +1,7 @@
+package network;
+
+import param.Param;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.List;

@@ -1,6 +1,7 @@
+package config;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONReader;
-import com.alibaba.fastjson.util.IOUtils;
 
 import java.io.*;
 import java.util.List;
