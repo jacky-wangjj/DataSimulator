@@ -4,6 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.log4j.Logger;
 import param.Param;
 import properties.SiteConfig;
 
@@ -17,6 +18,7 @@ import java.util.Properties;
  * Created by wangjj17 on 2018/11/23.
  */
 public class Consumer {
+    private static Logger logger = Logger.getLogger(Consumer.class);
     private KafkaConsumer consumer;
     private String topic;
     private String kafkaConnect;
@@ -49,7 +51,7 @@ public class Consumer {
                         ByteArrayInputStream bais = new ByteArrayInputStream(data.getBytes());
                         ObjectInputStream ois = new ObjectInputStream(bais);
                         Param param = (Param) ois.readObject();
-                        System.out.println(param.toString());
+                        logger.info(param.toString());
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (ClassNotFoundException e) {

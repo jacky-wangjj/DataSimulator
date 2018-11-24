@@ -4,6 +4,7 @@ import config.Config;
 import config.ParamConfs;
 import config.ParseConfig;
 import excel.ExcelUtils;
+import org.apache.log4j.Logger;
 import param.Param;
 import param.ParamUtils;
 
@@ -17,6 +18,7 @@ import java.util.regex.Pattern;
  * Created by wangjj17 on 2018/11/14.
  */
 public class DataSimulator{
+    private static Logger logger = Logger.getLogger(DataSimulator.class);
     private static Config config;
     private Thread thread;
     private boolean isStop = false;
@@ -111,7 +113,7 @@ public class DataSimulator{
                 Pattern pattern = Pattern.compile(key + "-[0-9]+" + SUFFIX);
                 Matcher matcher = pattern.matcher(file.getName());
                 if (matcher.matches()) {
-                    System.out.println(file.getName());
+                    logger.info(file.getName());
                     //检查fileName的excel文件是否存在，存在则删除
                     if (file.exists()) {
                         file.delete();
@@ -127,7 +129,7 @@ public class DataSimulator{
      */
     public void printParams(List<Param> params) {
         for (Param param : params) {
-            System.out.println(param.toString());
+            logger.info(param.toString());
         }
     }
 
@@ -136,7 +138,7 @@ public class DataSimulator{
      */
     public void getCurrentTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println("Time:"+sdf.format(new Date()));
+        logger.info("Time:"+sdf.format(new Date()));
     }
 
     /**
@@ -154,7 +156,7 @@ public class DataSimulator{
      * 保存常量
      */
     public void saveConst() {
-        System.out.println("saveConst:");
+        logger.info("saveConst:");
         beforeSave();
         List<Param> params = new ArrayList(BUFSIZE);
         for (ParamConfs constParam : constParams) {
@@ -171,7 +173,7 @@ public class DataSimulator{
      * 保存时序变量
      */
     public void saveTimeSequence() {
-        System.out.println("saveTimeSequence:");
+        logger.info("saveTimeSequence:");
         getCurrentTime();
         for (ParamConfs timeSequenceParam : timeSequenceParams) {
             beforeSave();
@@ -205,7 +207,7 @@ public class DataSimulator{
             if (isStop)
                 break;
         }
-        System.out.println("params.size:"+params.size());
+        logger.info("params.size:"+params.size());
         eu.saveToExcel(params, TIMESEQUENCE_TYPE, timeSequenceParam.getName(), FILE_FORMAT);
     }
 

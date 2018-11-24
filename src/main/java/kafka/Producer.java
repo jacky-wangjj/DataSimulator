@@ -3,6 +3,7 @@ package kafka;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.log4j.Logger;
 import param.Param;
 import properties.SiteConfig;
 
@@ -17,20 +18,21 @@ import java.util.Properties;
  * Created by wangjj17 on 2018/11/23.
  */
 public class Producer {
+    private static Logger logger = Logger.getLogger(Producer.class);
     private KafkaProducer producer;
     private String topic;
     private String kafkaConnect;
-    private int acks;
+    private String acks;
     private String keySerializer;
     private String valueSerializer;
 
     public Producer(String topic) {
         kafkaConnect = SiteConfig.get("kafka.connect");
-        acks = Integer.valueOf(SiteConfig.get("producer.acks"));
+        acks = SiteConfig.get("producer.acks");
         keySerializer = SiteConfig.get("producer.key.serializer");
         valueSerializer = SiteConfig.get("producer.value.serializer");
         Properties props = new Properties();
-        props.put("brootstrap.servers", kafkaConnect);
+        props.put("bootstrap.servers", kafkaConnect);
         props.put("acks", acks);
         props.put("key.serializer", keySerializer);
         props.put("value.serializer", valueSerializer);
@@ -64,6 +66,9 @@ public class Producer {
         }
         String data = baos.toString();
         Producer producer = new Producer(topic);
-        producer.producer(key, data);
+        while (true) {
+            producer.producer(key, data);
+            logger.info(key+":"+data);
+        }
     }
 }

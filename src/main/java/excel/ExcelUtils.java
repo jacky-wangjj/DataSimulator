@@ -1,5 +1,6 @@
 package excel;
 
+import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -20,6 +21,7 @@ import java.util.Set;
  * Created by wangjj17 on 2018/11/16.
  */
 public class ExcelUtils {
+    private static Logger logger =Logger.getLogger(ExcelUtils.class);
     private int sheetIndex;
     private int tableIndex;
     private int BUFSIZE;
@@ -106,7 +108,7 @@ public class ExcelUtils {
         if (sheet == null || sheet.getLastRowNum()+BUFSIZE > SHEET_CAPACITY) {//判断sheet的容量是否满足，不够则新建sheet
             sheet = (HSSFSheet) workbook.createSheet();//workbook中创建sheet对应excel中的sheet
             sheetIndex++;
-            System.out.println("************ new sheet, sheetIndex:"+sheetIndex+" *************");
+            logger.info("************ new sheet, sheetIndex:"+sheetIndex+" *************");
         }
         return sheet;
     }
@@ -121,7 +123,7 @@ public class ExcelUtils {
         if (sheet == null || sheet.getLastRowNum()+BUFSIZE > SHEET_CAPACITY) {//判断sheet的容量是否满足，不够则新建sheet
             sheet = (XSSFSheet) workbook.createSheet();//workbook中创建sheet对应excel中的sheet
             sheetIndex++;
-            System.out.println("************ new sheet, sheetIndex:"+sheetIndex+" *************");
+            logger.info("************ new sheet, sheetIndex:"+sheetIndex+" *************");
         }
         return sheet;
     }
@@ -256,7 +258,7 @@ public class ExcelUtils {
             tableIndex++;
             sheetIndex = -1;
             filePath = fileName+String.valueOf(tableIndex)+SUFFIX;
-            System.out.println("******** new table, tableIndex:"+tableIndex+" *********");
+            logger.info("******** new table, tableIndex:"+tableIndex+" *********");
         }
         HSSFWorkbook workbook = openXlsWorkbook(filePath);
         int line;
@@ -276,7 +278,7 @@ public class ExcelUtils {
                 row.createCell(0).setCellValue(param.getTimestamp());
                 fillOtherValues(row, param);
             }
-            //System.out.println("line:"+line+" LastRow:"+sheet.getLastRowNum());
+            //logger.info("line:"+line+" LastRow:"+sheet.getLastRowNum());
         }
         closeWorkbook(workbook, filePath);
     }
@@ -294,7 +296,7 @@ public class ExcelUtils {
             tableIndex++;
             sheetIndex = -1;
             filePath = fileName+String.valueOf(tableIndex)+SUFFIX;
-            System.out.println("******** new table, tableIndex:"+tableIndex+" *********");
+            logger.info("******** new table, tableIndex:"+tableIndex+" *********");
         }
         XSSFWorkbook workbook = openXlsxWorkbook(filePath);
         int line;
@@ -314,7 +316,7 @@ public class ExcelUtils {
                 row.createCell(0).setCellValue(param.getTimestamp());
                 fillOtherValues(row, param);
             }
-            //System.out.println("line:"+line+" LastRow:"+sheet.getLastRowNum());
+            //logger.info("line:"+line+" LastRow:"+sheet.getLastRowNum());
         }
         closeWorkbook(workbook, filePath);
     }
