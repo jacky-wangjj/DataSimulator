@@ -88,11 +88,12 @@ public class Client {
                 } else if (timeInterval > 0){
                     final List<Param<String, Number>> params = new ArrayList<>(sendBufSize);
                     TimerTask getParamTask = new TimerTask() {
+                        long timestamp = startTime;
                         @Override
                         public void run() {
-                            long timestamp = System.currentTimeMillis();
                             Param<String, Number> param = paramUtils.getParam(paramConf, timestamp);
                             //System.out.println(param.toString());
+                            timestamp = timestamp + timeInterval;
                             sendObject(param);
                             //params.add(param);
                         }
