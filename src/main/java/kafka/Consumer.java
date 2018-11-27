@@ -5,10 +5,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import param.Param;
 import properties.SiteConfig;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Arrays;
@@ -18,6 +20,10 @@ import java.util.Properties;
  * Created by wangjj17 on 2018/11/23.
  */
 public class Consumer {
+    //手动指定放在jar包外的log4j配置文件
+    static {
+        PropertyConfigurator.configure(System.getProperty("user.dir")+ File.separator+"etc"+File.separator+"log4j.properties");
+    }
     private static Logger logger = Logger.getLogger(Consumer.class);
     private KafkaConsumer consumer;
     private String topic;

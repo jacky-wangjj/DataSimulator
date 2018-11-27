@@ -1,6 +1,6 @@
 {
   "numOfParams":4,
-  "fileDir":"D:\\",
+  "fileDir":"./excle/",
   "fileFormat":"xls",
   "sheetCapacity":10240,
   "tableCapacity":2,

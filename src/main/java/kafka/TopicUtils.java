@@ -6,9 +6,11 @@ import kafka.server.ConfigType;
 import kafka.utils.ZkUtils;
 import org.apache.kafka.common.security.JaasUtils;
 
+import java.io.File;
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.LoggerFactory;
 import properties.SiteConfig;
 
@@ -16,6 +18,10 @@ import properties.SiteConfig;
  * Created by wangjj17 on 2018/11/23.
  */
 public class TopicUtils {
+    //手动指定放在jar包外的log4j配置文件
+    static {
+        PropertyConfigurator.configure(System.getProperty("user.dir")+ File.separator+"etc"+File.separator+"log4j.properties");
+    }
     private static Logger logger = Logger.getLogger(TopicUtils.class);
     private String zkConnect;
 
@@ -83,7 +89,7 @@ public class TopicUtils {
 
     public static void main(String[] args) {
         TopicUtils tu = new TopicUtils();
-        String topic = "data";
+        String topic = "dataSimulator";
         int partition = 2;
         int duplicate = 1;
         Properties props = new Properties();

@@ -4,10 +4,12 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import param.Param;
 import properties.SiteConfig;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -18,6 +20,10 @@ import java.util.Properties;
  * Created by wangjj17 on 2018/11/23.
  */
 public class Producer {
+    //手动指定放在jar包外的log4j配置文件
+    static {
+        PropertyConfigurator.configure(System.getProperty("user.dir")+ File.separator+"etc"+File.separator+"log4j.properties");
+    }
     private static Logger logger = Logger.getLogger(Producer.class);
     private KafkaProducer producer;
     private String topic;

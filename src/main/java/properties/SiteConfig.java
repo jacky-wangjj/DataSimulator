@@ -10,7 +10,7 @@ import java.util.Properties;
 public class SiteConfig {
     private static Properties prop = null;
     static {
-        prop = loadProperties("../site.properties");
+        prop = loadProperties("../etc/site.properties");
     }
 
     public static String get(String key) {

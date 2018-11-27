@@ -5,10 +5,12 @@ import config.ParamConfs;
 import config.ParseConfig;
 import excel.ExcelUtils;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import param.Param;
 import param.ParamUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -18,6 +20,10 @@ import java.util.regex.Pattern;
  * Created by wangjj17 on 2018/11/14.
  */
 public class DataSimulator{
+    //手动指定放在jar包外的log4j配置文件
+    static {
+        PropertyConfigurator.configure(System.getProperty("user.dir")+File.separator+"etc"+File.separator+"log4j.properties");
+    }
     private static Logger logger = Logger.getLogger(DataSimulator.class);
     private static Config config;
     private Thread thread;
@@ -53,6 +59,7 @@ public class DataSimulator{
         startTime = System.currentTimeMillis();//获取系统时间，作为开始时间
         duration = config.getDuration();//获取模拟总时间，以ms为单位
         fileDir = config.getFileDir();//获取excel文件的存储路径
+        checkFileDir(fileDir);//检查并创建存储路径
         FILE_FORMAT = config.getFileFormat();//获取excel文件的格式
         SHEET_CAPACITY = config.getSheetCapacity();//获取sheet表的最大容量
         TABLE_CAPACITY = config.getTableCapacity();//获取table表的最大sheet数
@@ -69,6 +76,16 @@ public class DataSimulator{
         eu.setTABLE_CAPACITY(TABLE_CAPACITY);
     }
 
+    /**
+     * 检查并创建存储路径
+     * @param fileDir
+     */
+    public void checkFileDir(String fileDir) {
+        File dir = new File(fileDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+    }
     /**
      * 依据ParamConfs.timeInterval分别填充constParams和timeSequenceParams
      * @param paramConfs

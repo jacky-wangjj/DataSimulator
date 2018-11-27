@@ -18,7 +18,7 @@ public class ParseConfig {
     public static Config parseConfig() {
         JSONReader jsonReader = null;
         try {
-            jsonReader = new JSONReader(new FileReader(new File("src/main/resources/config.json")));
+            jsonReader = new JSONReader(new FileReader(new File("etc/config.json")));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
