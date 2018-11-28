@@ -15,8 +15,8 @@ function prompt()
         2.Server
         3.Client
         4.Topic
-        5.Producer
-        6.Consumer
+        5.ParamProducer
+        6.ParamConsumer
 ==============================================
 EOF
 }
@@ -31,10 +31,10 @@ elif [[ "$SERVICE" = "Client" ]];then
     java -classpath DataSimulator-1.0.0-release.jar network.Client
 elif [[ "$SERVICE" = "Topic" ]];then
     java -classpath DataSimulator-1.0.0-release.jar kafka.TopicUtils
-elif [[ "$SERVICE" = "Producer" ]];then
-    java -classpath DataSimulator-1.0.0-release.jar kafka.Producer
-elif [[ "$SERVICE" = "Consumer" ]];then
-    java -classpath DataSimulator-1.0.0-release.jar kafka.Consumer
+elif [[ "$SERVICE" = "ParamProducer" ]];then
+    java -classpath DataSimulator-1.0.0-release.jar kafka.ParamProducer
+elif [[ "$SERVICE" = "ParamConsumer" ]];then
+    java -classpath DataSimulator-1.0.0-release.jar kafka.ParamConsumer
 else
     echo -e "\033[31m`prompt`\n\033[0m"
 fi

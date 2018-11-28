@@ -1,6 +1,8 @@
 package network;
 
+import kafka.ParamProducer;
 import param.Param;
+import properties.SiteConfig;
 
 import java.io.*;
 import java.net.Socket;
@@ -15,9 +17,13 @@ public class ServerThread extends Thread {
     private InputStream is = null;
     private ObjectInputStream ois = null;
     private Object object;
+    private Boolean isAsync = Boolean.valueOf(SiteConfig.get("producer.send.isAsync"));
+    private String topic = SiteConfig.get("kafka.topic");
+    private ParamProducer pp;
 
     public ServerThread(Socket socket) {
         this.socket = socket;
+        pp = new ParamProducer(topic, isAsync);
     }
 
     public synchronized void receiveObject() throws Exception {
@@ -28,10 +34,12 @@ public class ServerThread extends Thread {
             if ((object = ois.readObject()) instanceof Param) {
                 Param<String, Number> param = (Param<String, Number>) object;
                 System.out.println(param.toString());
+                pp.producer(param.getName(), param);
             } else {
                 List<Param<String, Number>> params = (List<Param<String, Number>>) object;
                 for (Param param : params) {
                     System.out.println(param.toString());
+                    pp.producer(param.getName(), param);
                 }
             }
         }

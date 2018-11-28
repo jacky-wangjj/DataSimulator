@@ -1,7 +1,7 @@
 package kafka;
 
 import kafka.admin.AdminUtils;
-import kafka.admin.RackAwareMode;
+//import kafka.admin.RackAwareMode;//0.9.0.0不支持，0.10.2.1支持
 import kafka.server.ConfigType;
 import kafka.utils.ZkUtils;
 import org.apache.kafka.common.security.JaasUtils;
@@ -37,7 +37,7 @@ public class TopicUtils {
      */
     public void createTopic(String topic, int partition, int duplicate, Properties props) {
         ZkUtils zkUtils = ZkUtils.apply(zkConnect, 30000, 30000, JaasUtils.isZkSecurityEnabled());
-        AdminUtils.createTopic(zkUtils, topic, partition, duplicate, props, RackAwareMode.Enforced$.MODULE$);
+//        AdminUtils.createTopic(zkUtils, topic, partition, duplicate, props, RackAwareMode.Enforced$.MODULE$);
         zkUtils.close();
     }
 
@@ -111,6 +111,7 @@ public class TopicUtils {
             Map.Entry entry = (Map.Entry) it1.next();
             logger.info(entry.getKey()+":"+entry.getValue());
         }
+        //需要修改kafka配置文件server.properties中属性delete.topic.enable=true
         tu.deleteTopic(topic);
     }
 }
