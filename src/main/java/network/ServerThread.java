@@ -1,5 +1,6 @@
 package network;
 
+import com.alibaba.fastjson.JSON;
 import kafka.ParamProducer;
 import param.Param;
 import properties.SiteConfig;
@@ -30,16 +31,21 @@ public class ServerThread extends Thread {
         //获取socket的输入流，并读取客户端发送来的消息
         is = socket.getInputStream();
         if (is.available() > 0) {
+            String paramJson;
             ois = new ObjectInputStream(is);//对象输入流
             if ((object = ois.readObject()) instanceof Param) {
                 Param<String, Number> param = (Param<String, Number>) object;
                 System.out.println(param.toString());
-                pp.producer(param.getName(), param);
+//                pp.producer(param.getName(), param);
+                paramJson = JSON.toJSON(param).toString();
+                pp.producer(param.getName(), paramJson);
             } else {
                 List<Param<String, Number>> params = (List<Param<String, Number>>) object;
                 for (Param param : params) {
                     System.out.println(param.toString());
-                    pp.producer(param.getName(), param);
+//                    pp.producer(param.getName(), param);
+                    paramJson = JSON.toJSON(param).toString();
+                    pp.producer(param.getName(), paramJson);
                 }
             }
         }

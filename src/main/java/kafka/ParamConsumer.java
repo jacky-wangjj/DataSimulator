@@ -1,5 +1,7 @@
 package kafka;
 
+import com.alibaba.fastjson.JSON;
+import jdk.nashorn.internal.parser.JSONParser;
 import kafka.consumer.Consumer;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.consumer.ConsumerIterator;
@@ -47,6 +49,7 @@ public class ParamConsumer {
     /**
      * 消费函数
      */
+/*
     public void consumer() {
         Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
         topicCountMap.put(topic, 1);
@@ -57,6 +60,22 @@ public class ParamConsumer {
         ConsumerIterator<String, Param> it = stream.iterator();
         while (it.hasNext()) {
             Param param = it.next().message();
+            logger.info(param.toString());
+        }
+    }
+*/
+
+    public void consumer() {
+        Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
+        topicCountMap.put(topic, 1);
+        StringDecoder keyDecoder = new StringDecoder(new VerifiableProperties());
+        StringDecoder valueDecoder = new StringDecoder(new VerifiableProperties());
+        Map<String, List<KafkaStream<String, String>>> consumerMap = connector.createMessageStreams(topicCountMap, keyDecoder, valueDecoder);
+        KafkaStream<String, String> stream = consumerMap.get(topic).get(0);
+        ConsumerIterator<String, String> it = stream.iterator();
+        while (it.hasNext()) {
+            String paramJson = it.next().message();
+            Param param = JSON.parseObject(paramJson, Param.class);
             logger.info(param.toString());
         }
     }

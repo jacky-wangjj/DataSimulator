@@ -1,5 +1,6 @@
 package kafka;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.log4j.Logger;
@@ -23,7 +24,8 @@ public class ParamProducer {
         PropertyConfigurator.configure(System.getProperty("user.dir")+ File.separator+"etc"+File.separator+"log4j.properties");
     }
     private static Logger logger = Logger.getLogger(ParamProducer.class);
-    private KafkaProducer<String, Param> producer;
+//    private KafkaProducer<String, Param> producer;
+    private KafkaProducer<String, String> producer;
     private String topic;
     private Boolean isAsync;
 
@@ -38,8 +40,10 @@ public class ParamProducer {
         props.setProperty(ProducerConfig.ACKS_CONFIG, SiteConfig.get("producer.acks"));//是否等待kafka的响应；0为不等待，1等待本机，all等待kafka集群同步完成
         props.setProperty(ProducerConfig.RETRIES_CONFIG, SiteConfig.get("producer.retries"));//消息发送失败后重新发送次数
         props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());//键序列化
-        props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ParamEncoder.class.getName());//值序列化
-        producer = new KafkaProducer<String, Param>(props);
+//        props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ParamEncoder.class.getName());//值序列化
+        props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());//值序列化
+//        producer = new KafkaProducer<String, Param>(props);
+        producer = new KafkaProducer<String, String>(props);
         this.topic = topic;
         this.isAsync = isAsync;
     }
@@ -50,19 +54,29 @@ public class ParamProducer {
     class SendCallBack implements Callback {
         private final long startTime;
         private final String key;
-        private final Param param;
+//        private final Param param;
+        private final String paramJson;
 
+/*
         SendCallBack(long startTime, String key, Param param) {
             this.startTime = startTime;
             this.key = key;
             this.param = param;
+        }
+*/
+
+        SendCallBack(long startTime, String key, String paramJson) {
+            this.startTime = startTime;
+            this.key = key;
+            this.paramJson = paramJson;
         }
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception e) {
             long elapsedTime = System.currentTimeMillis() - startTime;
             if (metadata != null) {
-                logger.info("message("+key+":"+param.toString()+") sent to partition("+metadata.partition()+"), offset("+metadata.offset()+")"+elapsedTime+"ms");
+//                logger.info("message("+key+":"+param.toString()+") sent to partition("+metadata.partition()+"), offset("+metadata.offset()+")"+elapsedTime+"ms");
+                logger.info("message("+key+":"+paramJson+") sent to partition("+metadata.partition()+"), offset("+metadata.offset()+")"+elapsedTime+"ms");
             } else {
                 e.printStackTrace();
             }
@@ -72,8 +86,9 @@ public class ParamProducer {
     /**
      * 生产函数
      * @param key
-     * @param param
+     * @param paramJson
      */
+/*
     public void producer(String key, Param param) {
         ProducerRecord<String, Param> record = new ProducerRecord<String, Param>(topic, key, param);
         long startTime = System.currentTimeMillis();
@@ -89,6 +104,23 @@ public class ParamProducer {
             }
         }
         logger.info("sent message:("+key+":"+param.toString()+")");
+    }
+*/
+    public void producer(String key, String paramJson) {
+        ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, paramJson);
+        long startTime = System.currentTimeMillis();
+        if (isAsync) {//send asynchronously
+            producer.send(record, new SendCallBack(startTime, key, paramJson));
+        } else {//send synchronously
+            try {
+                producer.send(record).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        logger.info("sent message:("+key+":"+paramJson+")");
     }
 
     /**
@@ -118,9 +150,11 @@ public class ParamProducer {
         Boolean isAsync = Boolean.valueOf(SiteConfig.get("producer.send.isAsync"));
         ParamProducer pp = new ParamProducer(topic, isAsync);
         int n = 0;
+        String paramJson = JSON.toJSON(param).toString();
         try {
             while (true) {
-                pp.producer(key, param);
+//                pp.producer(key, param);
+                pp.producer(key, paramJson);
                 if (++n == 100) {
                     break;
                 }
